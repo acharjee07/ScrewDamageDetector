@@ -1,0 +1,12 @@
+albumentations
+timm
+torch
+glob2
+pandas
+matplotlib
+numpy
+scikit-learn
+pytorch_lightning
+cv2
+typing
+tqdm

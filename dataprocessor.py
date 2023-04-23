@@ -70,3 +70,24 @@ class ScrewDataset(Dataset):
 
     def __len__(self):
         return len(self.df)
+
+
+
+
+class ScrewDatasetTest(Dataset):
+    def __init__(self, df, transform=None):
+        self.df = df
+        self.transform = transform
+
+    def __getitem__(self, index):
+        row = self.df.iloc[index]
+        image = cv2.imread(row['image_path'])
+
+        if self.transform is not None:
+          image = self.transform(image=image)['image']
+
+        
+        return image/255.0,-1,row['image_path']
+
+    def __len__(self):
+        return len(self.df)

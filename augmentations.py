@@ -3,7 +3,7 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
 train_transforms = A.Compose([
-    A.Resize(256, 256),
+    A.Resize(1024, 1024),
     A.HorizontalFlip(p=0.5),
     A.VerticalFlip(p=0.5),
     A.Rotate(limit=30, p=0.5),
@@ -20,7 +20,7 @@ train_transforms = A.Compose([
 ])
 
 valid_transforms = A.Compose([
-    A.Resize(256, 256),
+    A.Resize(1024, 1024),
 
     ToTensorV2(),
  

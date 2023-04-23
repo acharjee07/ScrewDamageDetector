@@ -41,3 +41,10 @@ To train the model run `train.py` file.
 
 ```python
 python train.py 
+```
+
+To do inference on trained model download the weights go this this [link](https://www.kaggle.com/datasets/badgenius/screwed-weights)
+
+```python
+python test.py /home/user/data/test /home/user/models/weights
+

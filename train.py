@@ -50,7 +50,7 @@ for fold in range(Config.folds):
     
     trainer = Trainer(
         max_epochs=Config.epochs,
-        accelerator="gpu",
+        accelerator="cpu",
         log_every_n_steps=10,
         callbacks=checkpoint_callback,
         logger=logger
@@ -58,4 +58,3 @@ for fold in range(Config.folds):
     )
     lit_model=ScrewModel(Effnet())
     trainer.fit(lit_model, train_dataloaders = train_loader, val_dataloaders = valid_loader)
-    wandb.finish()

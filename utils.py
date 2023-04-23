@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 import math
+import torch
+import torch.nn.functional as F
+from typing import List
+from tqdm import tqdm
 
 
 def visual(df,n):
@@ -40,3 +44,54 @@ def visualize_dataset(dataset, n):
             axs[i,j].axis('off')
     plt.tight_layout()
     plt.show()
+
+
+def ensemble_models(models: List[torch.nn.Module], weights_path: List[str], test_loader: torch.utils.data.DataLoader, threshold: float) -> List[int]:
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # load the models' weights
+    for i, model in enumerate(models):
+        model=load_model(model, weights_path[i])
+        model.eval()
+        model.to(device)
+
+    # make predictions on the test dataset using each model
+    predictions = []
+    img_paths=[]
+    ground_truth=[]
+    with torch.no_grad():
+        for data,gt,path in tqdm(test_loader):
+            data = data.to(device)
+            outputs = []
+            for model in models:
+                output = model(data)
+                outputs.append(output)
+            ensemble_output = sum(outputs) / len(outputs)
+            ensemble_output = torch.softmax(ensemble_output, dim=1)
+            img_paths.extend(path)
+            predictions.extend(ensemble_output.cpu().numpy().tolist())
+            ground_truth.extend(gt)
+
+    # apply the threshold to the predictions to get the final binary predictions
+    binary_predictions = [1 if p[1] >= threshold else 0 for p in predictions]
+    ground_truth=[x.argmax().item() if isinstance(x, torch.Tensor) else x for x in ground_truth]
+    
+    return [[pred,path,gt] for pred,path,gt in zip(binary_predictions,img_paths,ground_truth)]
+
+
+
+def load_model(model,path):
+    state_dict = torch.load(path)['state_dict']
+
+    # create a new state dict with modified keys
+    new_state_dict = {}
+    for key in state_dict.keys():
+        if key.startswith('backbone.backbone.'):
+            new_key = key.replace('backbone.backbone.', 'backbone.')
+        else:
+            new_key = key
+        new_state_dict[new_key] = state_dict[key]
+
+    # use the new state dict for your model
+#     print(new_state_dict)
+    model.load_state_dict(new_state_dict)
+    return model
